@@ -30,6 +30,7 @@ private:
   string endpoint;
   string socket_type;
   string delimiter;
+  string prefix;
   int sock;
   const char *channel;
 };

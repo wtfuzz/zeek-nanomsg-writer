@@ -21,6 +21,8 @@ Nanomsg::Nanomsg(WriterFrontend* frontend): WriterBackend(frontend), formatter(n
                      BifConst::LogNanomsg::socket_type->Len());
   delimiter.assign((const char *)BifConst::LogNanomsg::delimiter->Bytes(),
                    BifConst::LogNanomsg::delimiter->Len());
+  prefix.assign((const char *)BifConst::LogNanomsg::prefix->Bytes(),
+                   BifConst::LogNanomsg::prefix->Len());
 }
 
 Nanomsg::~Nanomsg()
@@ -53,23 +55,42 @@ bool Nanomsg::DoFinish(double network_time)
 
 bool Nanomsg::DoWrite(int num_fields, const threading::Field* const* fields, threading::Value** vals)
 {
+  struct nn_msghdr header;
+  struct nn_iovec iov[5];
+
   ODesc buffer;
   buffer.Clear();
 
   formatter->Describe(&buffer, num_fields, fields, vals);
 
-  struct nn_msghdr header;
-  struct nn_iovec iov[3];
-
-  iov[0].iov_base = (void *)channel;
-  iov[0].iov_len = strlen(channel);
-  iov[1].iov_base = (void *)delimiter.c_str();
-  iov[1].iov_len = delimiter.length();
-  iov[2].iov_base = (void *)buffer.Bytes();
-  iov[2].iov_len = buffer.Len();
-  memset(&header, 0, sizeof(header));
-  header.msg_iov = iov;
-  header.msg_iovlen = 3;
+  if(prefix.length() == 0)
+  {
+    iov[0].iov_base = (void *)channel;
+    iov[0].iov_len = strlen(channel);
+    iov[1].iov_base = (void *)delimiter.c_str();
+    iov[1].iov_len = delimiter.length();
+    iov[2].iov_base = (void *)buffer.Bytes();
+    iov[2].iov_len = buffer.Len();
+    memset(&header, 0, sizeof(header));
+    header.msg_iov = iov;
+    header.msg_iovlen = 3;
+  }
+  else
+  {
+    iov[0].iov_base = (void *)prefix.c_str();
+    iov[0].iov_len = prefix.length();
+    iov[1].iov_base = (void *)delimiter.c_str();
+    iov[1].iov_len = delimiter.length();
+    iov[2].iov_base = (void *)channel;
+    iov[2].iov_len = strlen(channel);
+    iov[3].iov_base = (void *)delimiter.c_str();
+    iov[3].iov_len = delimiter.length();
+    iov[4].iov_base = (void *)buffer.Bytes();
+    iov[4].iov_len = buffer.Len();
+    memset(&header, 0, sizeof(header));
+    header.msg_iov = iov;
+    header.msg_iovlen = 5;
+  }
 
   if(nn_sendmsg(sock, &header, 0) < 0)
   {
