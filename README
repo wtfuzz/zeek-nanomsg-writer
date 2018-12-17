@@ -1,0 +1,6 @@
+Zeek Nanomsg Writer Plugin
+==========================
+
+This plugin sends Zeek logs to a Nanomsg endpoint.
+
+

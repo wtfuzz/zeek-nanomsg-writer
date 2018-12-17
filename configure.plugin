@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Hooks to add custom options to the configure script.
+#
+
+plugin_usage()
+{
+  cat <<EOF
+    --with-nanomsg=DIR         Path to nanomsg
+EOF
+}
+
+plugin_option()
+{
+    case "$1" in
+        --with-nanomsg=*)
+            append_cache_entry NANOMSG_DIR PATH $optarg
+            return 0
+            ;;
+
+        *)
+            return 1;
+            ;;
+    esac
+}
