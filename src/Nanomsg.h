@@ -29,6 +29,7 @@ private:
   threading::formatter::JSON* formatter;
   string endpoint;
   string socket_type;
+  string delimiter;
   int sock;
   const char *channel;
 };

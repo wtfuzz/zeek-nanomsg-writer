@@ -18,7 +18,9 @@ Nanomsg::Nanomsg(WriterFrontend* frontend): WriterBackend(frontend), formatter(n
   endpoint.assign((const char *)BifConst::LogNanomsg::endpoint->Bytes(),
                   BifConst::LogNanomsg::endpoint->Len());
   socket_type.assign((const char *)BifConst::LogNanomsg::socket_type->Bytes(),
-                  BifConst::LogNanomsg::socket_type->Len());
+                     BifConst::LogNanomsg::socket_type->Len());
+  delimiter.assign((const char *)BifConst::LogNanomsg::delimiter->Bytes(),
+                   BifConst::LogNanomsg::delimiter->Len());
 }
 
 Nanomsg::~Nanomsg()
@@ -61,8 +63,8 @@ bool Nanomsg::DoWrite(int num_fields, const threading::Field* const* fields, thr
 
   iov[0].iov_base = (void *)channel;
   iov[0].iov_len = strlen(channel);
-  iov[1].iov_base = (void *)":";
-  iov[1].iov_len = 1;
+  iov[1].iov_base = (void *)delimiter.c_str();
+  iov[1].iov_len = delimiter.length();
   iov[2].iov_base = (void *)buffer.Bytes();
   iov[2].iov_len = buffer.Len();
   memset(&header, 0, sizeof(header));

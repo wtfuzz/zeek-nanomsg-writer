@@ -2,3 +2,4 @@ module LogNanomsg;
 
 const endpoint: string;
 const socket_type: string;
+const delimiter: string;
